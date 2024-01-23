@@ -1,24 +1,14 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React from "react";
+import DeckGL from "@deck.gl/react";
+import { Map } from "react-map-gl";
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <DeckGL>
+      <Map
+        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapboxAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
+      />
+    </DeckGL>
   );
 }
 

@@ -1,0 +1,35 @@
+.control {
+  height: 100vh;
+  position: relative; /* or absolute, depending on your layout */
+  z-index: 10000;
+}
+
+.control select {
+  position: relative; /* or absolute, depending on your layout */
+  background-color: #fff;
+  border: 1px solid #ee0404;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  padding: 1.5rem 1.5rem;
+  z-index: 10001;
+}
+
+.locationControl {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 12px;
+  background-color: #fff;
+  color: #ee0404;
+  z-index: 10001;
+}
+.yearControl {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 12px;
+  background-color: #fff;
+  color: #ee0404;
+  z-index: 10001;
+}

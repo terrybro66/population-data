@@ -33,3 +33,13 @@
   color: #ee0404;
   z-index: 10001;
 }
+.tool {
+  position: absolute;
+  right: 50px;
+  padding: 20px;
+  padding: 12px;
+  background-color: #fff;
+  color: #ee0404;
+  z-index: 10002;
+  cursor: pointer;
+}

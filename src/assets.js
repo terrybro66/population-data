@@ -98,7 +98,7 @@ export const schema = {
             type: "object",
             properties: {
               name: { type: "string" },
-              h: { type: "number" },
+              height: { type: "number" },
               color: {
                 type: "array",
                 items: { type: "number" },
@@ -106,7 +106,7 @@ export const schema = {
                 maxItems: 3,
               },
             },
-            required: ["name", "h", "color"],
+            required: ["name", "height", "color"],
           },
           geometry: {
             type: "object",

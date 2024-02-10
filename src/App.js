@@ -49,7 +49,8 @@ function App() {
   // };
 
   useEffect(() => {
-    let geojsonUrl = "https://skgrange.github.io/www/data/london_sport.json";
+    let geojsonUrl =
+      "https://raw.githubusercontent.com/radoi90/housequest-data/master/london_boroughs.geojson";
     let csvUrl =
       "https://data.london.gov.uk/download/land-area-and-population-density-ward-and-borough/77e9257d-ad9d-47aa-aeed-59a00741f301/housing-density-borough.csv";
 

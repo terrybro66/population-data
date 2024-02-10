@@ -78,7 +78,6 @@ function App() {
       },
       extruded: true,
       pickable: true,
-      getElevation: (d) => d.properties.h,
     }),
   ];
 
@@ -95,9 +94,6 @@ function App() {
             </button>
           );
         })}
-      </div>
-      <div className={styles.yearControl}>
-        <button onClick={changeH}>Change H</button>
       </div>
 
       <DeckGL

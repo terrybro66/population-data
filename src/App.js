@@ -13,7 +13,7 @@ const ajv = new Ajv({ allErrors: true });
 
 const locations = {
   london: {
-    longitude: -0.1275,
+    longitude: -0.127,
     latitude: 51.5072,
     zoom: 8,
     pitch: 45,
@@ -27,6 +27,7 @@ const locations = {
     bearing: 0,
   },
 };
+const lonElevationScalar = 0.05;
 
 function App() {
   const [view, setView] = useState(locations["london"]);
@@ -175,7 +176,7 @@ function App() {
       extruded: true,
       pickable: true,
       stroked: true,
-      getElevation: (d) => d.properties.height * 0.05,
+      getElevation: (d) => d.properties.height * lonElevationScalar,
       transitions: {
         getElevation: 1000, // animate for 1000ms
       },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import { Map } from "react-map-gl";
+import { FlyToInterpolator } from "deck.gl";
 import * as d3 from "d3";
 import Ajv from "ajv";
 
@@ -14,7 +15,7 @@ const locations = {
   london: {
     longitude: -0.1275,
     latitude: 51.5072,
-    zoom: 9,
+    zoom: 7,
     pitch: 45,
     bearing: 0,
   },
@@ -30,23 +31,82 @@ const locations = {
 function App() {
   const [view, setView] = useState(locations["london"]);
   const [populationData, setPopulationData] = useState(null);
-  const [years, setYears] = useState([]);
   const [layerData, setLayerData] = useState([]);
+  const [currentYear, setCurrentYear] = useState(2000);
   const [combinedData, setCombinedData] = useState([]);
-  const [validationError, setValidationError] = useState(null);
-
-  const [currentYear, setCurrentYear] = useState([2000]);
-  const [heightObj, setHeightObj] = useState();
+  const [years, setYears] = useState([]);
   const [tooltip, setTooltip] = useState(null);
 
-  // const schema = {
-  //   type: "object",
-  //   properties: {
-  //     type: { type: "string" },
-  //     features: { type: "array" },
-  //   },
-  //   required: ["type", "features"],
-  // };
+  const schema = {
+    type: "object",
+    properties: {
+      type: {
+        type: "string",
+      },
+      properties: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+          },
+          color: {
+            type: "integer",
+          },
+          height: {
+            type: "string",
+          },
+        },
+        required: ["name", "color", "height"],
+      },
+      geometry: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+          },
+          coordinates: {
+            type: "array",
+            items: {
+              type: "array",
+              items: {
+                type: "array",
+                items: [
+                  {
+                    type: "number",
+                  },
+                  {
+                    type: "number",
+                  },
+                ],
+                minItems: 2,
+                maxItems: 2,
+              },
+            },
+          },
+        },
+        required: ["type", "coordinates"],
+      },
+    },
+    required: ["type", "properties", "geometry"],
+  };
+
+  const data2 = {
+    type: "Feature",
+    properties: {
+      name: "Barking and Dagenham",
+      color: 0,
+      height: "163893",
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [0.1885882, 51.5538749],
+          [0.1883107494386028, 51.554023919399114],
+        ],
+      ],
+    },
+  };
 
   useEffect(() => {
     let geojsonUrl =
@@ -64,97 +124,126 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (populationData) {
-      const uniqueYears = [...new Set(populationData.map((item) => item.Year))];
-      setYears(uniqueYears);
-    }
-  }, [populationData]);
-
-  useEffect(() => {
     if (layerData && populationData) {
-      const currentYearData = populationData.filter(
-        (item) => item.Year === currentYear
-      );
       const newCombinedData = layerData.features.map((feature) => {
         const name = feature.properties.name;
 
         const populationItem = populationData.find(
-          (data) => data.Name === name && data.Year === currentYear
+          (data) => data.Name === name && Number(data.Year) === currentYear
         );
 
         if (populationItem) {
-          feature.properties.color = (255, 0, 0);
-          feature.properties.h = populationItem.population;
+          feature.properties.color = (55, 100, 0);
+          feature.properties.height = populationItem.Population;
         }
 
         return feature;
       });
 
-      // Set the new data object to combinedData state
       setCombinedData(newCombinedData);
-      console.log(combinedData);
     }
   }, [layerData, populationData, currentYear]);
 
   const validate = ajv.compile(schema);
 
   useEffect(() => {
-    const valid = validate(geodata);
-    if (!valid) {
-      console.log(validate.errors);
-    } else {
-      console.log("yea");
+    if (combinedData) {
+      const valid = validate(JSON.parse(combinedData[0]));
+      if (!valid) {
+        console.log("errors: ", validate.errors);
+        console.log(JSON.stringify(combinedData[0], null, 2));
+      } else {
+        console.log("success");
+      }
     }
-  }, [geodata]);
+  }, [combinedData]);
+
+  useEffect(() => {
+    if (populationData) {
+      const uniqueYears = [...new Set(populationData.map((item) => item.Year))];
+      setYears(uniqueYears);
+    }
+  }, [populationData]);
+
+  const handleFlyTo = (destination) => {
+    setView({
+      ...destination,
+      transitionDuration: 1500,
+      transitionInterpolator: new FlyToInterpolator(),
+    });
+  };
+  const handleYearChange = (e) => {
+    setCurrentYear(Number(e.target.value));
+  };
+  function getRandomColor() {
+    return [Math.random() * 255, Math.random() * 255, Math.random() * 255];
+  }
+  const onHover = ({ object, x, y }) => {
+    if (object && object.properties) {
+      const polygonName = object.properties.name;
+      console.log(`Hovered over polygon: ${polygonName}`);
+    }
+  };
 
   const layers = [
     new GeoJsonLayer({
       id: "geojson-layer",
-      data: geodata,
-      getFillColor: (d) => d.properties.color, // Set polygons to red
-
-      material: {
-        ambient: 0.64,
-        diffuse: 0.6,
-        shininess: 32,
-      },
+      data: combinedData,
+      getFillColor: [255, 0, 0],
       extruded: true,
       pickable: true,
-      getElevation: (d) => d.properties.h,
-      onHover: (info) => setTooltip(info),
+      stroked: true,
+      getElevation: (d) => d.properties.height * 0.05,
+      transitions: {
+        getElevation: 1000, // animate for 1000ms
+      },
+      getTooltip: ({ object }) => {
+        if (object && object.properties) {
+          const polygonName = object.properties.name;
+          return `Polygon: ${polygonName}`;
+        }
+        return null; // No tooltip if not hovering
+      },
+      onHover,
     }),
   ];
 
   return (
-    <div className={styles.control}>
-      <select onChange={(e) => setCurrentYear(e.target.value)}>
-        {years.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-
+    <>
+      <div className={styles.locationControl}>
+        {Object.keys(locations).map((location) => {
+          return (
+            <button
+              key={location}
+              onClick={() => handleFlyTo(locations[location])}
+            >
+              {location}
+            </button>
+          );
+        })}
+        <select onChange={(e) => handleYearChange(e)} value={currentYear}>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div id="tooltip" className={styles.tool}>
+        {tooltip && tooltip.object && tooltip.object.properties && (
+          <div>
+            <p>{tooltip.object.properties.name}</p>
+            <p>{tooltip.object.properties.height}</p>
+          </div>
+        )}
+      </div>
       <DeckGL initialViewState={view} controller={true} layers={layers}>
         <Map
           mapStyle="mapbox://styles/mapbox/dark-v11"
           mapboxAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
         />
-        {tooltip && tooltip.object && (
-          <div
-            style={{
-              position: "absolute",
-              zIndex: 1,
-              pointerEvents: "none",
-              left: tooltip.x,
-              top: tooltip.y,
-            }}
-          >
-            {/* Display tooltip content here, e.g., tooltipInfo.object.properties.name */}
-          </div>
-        )}{" "}
       </DeckGL>
-    </div>
+    </>
   );
 }
 

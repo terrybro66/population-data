@@ -6,6 +6,7 @@ import { FlyToInterpolator } from "deck.gl";
 import * as d3 from "d3";
 import Ajv from "ajv";
 
+import InfoCard from "./components/infoCard/InfoCard";
 import styles from "./App.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -37,6 +38,8 @@ function App() {
   const [years, setYears] = useState([]);
   const [tooltip, setTooltip] = useState(null);
   const [validated, setValidated] = useState(false);
+  const [hoverName, setHoverName] = useState("");
+  const [hoverPopulation, setHoverPopulation] = useState(null);
 
   const schema = {
     type: "object",
@@ -162,9 +165,14 @@ function App() {
   }
   const onHover = ({ object, x, y }) => {
     if (object && object.properties) {
-      const polygonName = object.properties.name;
-      console.log(`Hovered over polygon: ${polygonName}`);
+      const boroughName = object.properties.name;
+      const boroughPopulation = object.properties.height;
+      setHoverName(boroughName);
+      setHoverPopulation(boroughPopulation);
     }
+    //  else {
+    //   setHoverPopulation(null);
+    // }
   };
 
   const layers = [
@@ -178,13 +186,6 @@ function App() {
       getElevation: (d) => d.properties.height * 0.05,
       transitions: {
         getElevation: 1000, // animate for 1000ms
-      },
-      getTooltip: ({ object }) => {
-        if (object && object.properties) {
-          const polygonName = object.properties.name;
-          return `Polygon: ${polygonName}`;
-        }
-        return null; // No tooltip if not hovering
       },
       onHover,
     }),
@@ -219,15 +220,9 @@ function App() {
           ))}
         </select>
       </div>
-      <div id="tooltip" className={styles.tool}>
-        {tooltip && tooltip.object && tooltip.object.properties && (
-          <div>
-            <p>{tooltip.object.properties.name}</p>
-            <p>{tooltip.object.properties.height}</p>
-          </div>
-        )}
-      </div>
-
+      {hoverPopulation && (
+        <InfoCard name={hoverName} population={hoverPopulation} />
+      )}
       <DeckGL initialViewState={view} controller={true} layers={layers}>
         <Map
           mapStyle="mapbox://styles/mapbox/dark-v11"

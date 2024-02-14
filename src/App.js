@@ -13,7 +13,7 @@ const ajv = new Ajv({ allErrors: true });
 
 const locations = {
   london: {
-    longitude: -0.1275,
+    longitude: -0.127,
     latitude: 51.5072,
     zoom: 8,
     pitch: 45,
@@ -22,7 +22,7 @@ const locations = {
   paris: {
     longitude: 2.3522,
     latitude: 48.58572,
-    zoom: 10,
+    zoom: 8,
     pitch: 45,
     bearing: 0,
   },

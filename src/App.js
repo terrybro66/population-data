@@ -9,13 +9,13 @@ import Ajv from "ajv";
 import styles from "./App.module.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allErrors: true });
 
 const locations = {
   london: {
     longitude: -0.1275,
     latitude: 51.5072,
-    zoom: 7,
+    zoom: 8,
     pitch: 45,
     bearing: 0,
   },
@@ -36,6 +36,7 @@ function App() {
   const [combinedData, setCombinedData] = useState([]);
   const [years, setYears] = useState([]);
   const [tooltip, setTooltip] = useState(null);
+  const [validated, setValidated] = useState(false);
 
   const schema = {
     type: "object",
@@ -90,24 +91,6 @@ function App() {
     required: ["type", "properties", "geometry"],
   };
 
-  const data2 = {
-    type: "Feature",
-    properties: {
-      name: "Barking and Dagenham",
-      color: 0,
-      height: "163893",
-    },
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [0.1885882, 51.5538749],
-          [0.1883107494386028, 51.554023919399114],
-        ],
-      ],
-    },
-  };
-
   useEffect(() => {
     let geojsonUrl =
       "https://raw.githubusercontent.com/radoi90/housequest-data/master/london_boroughs.geojson";
@@ -148,12 +131,11 @@ function App() {
 
   useEffect(() => {
     if (combinedData) {
-      const valid = validate(JSON.parse(combinedData[0]));
+      const valid = validate(combinedData[0]);
       if (!valid) {
-        console.log("errors: ", validate.errors);
-        console.log(JSON.stringify(combinedData[0], null, 2));
+        setValidated(false);
       } else {
-        console.log("success");
+        setValidated(true);
       }
     }
   }, [combinedData]);
@@ -207,7 +189,15 @@ function App() {
       onHover,
     }),
   ];
-
+  if (!validated) {
+    return (
+      <div className={styles.jsonNotValid}>
+        <h1>Error</h1>
+        <p>JSON validation failed with the following errors:</p>
+        <pre>{JSON.stringify(validate.errors, null, 2)}</pre>
+      </div>
+    );
+  }
   return (
     <>
       <div className={styles.locationControl}>
@@ -237,6 +227,7 @@ function App() {
           </div>
         )}
       </div>
+
       <DeckGL initialViewState={view} controller={true} layers={layers}>
         <Map
           mapStyle="mapbox://styles/mapbox/dark-v11"

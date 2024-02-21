@@ -4,6 +4,7 @@ import { FlyToInterpolator } from "deck.gl";
 import * as d3 from "d3";
 import CitySelector from "./components/citySelector/CitySelector";
 import Map from "./components/map/Map2";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const cities = {
   london: {
@@ -37,10 +38,11 @@ function App() {
   const [viewState, setViewState] = useState(initiaViewState);
   const [city, setCity] = useState("london");
   const [year, setYear] = useState(2020);
-  const [data, setData] = useState({});
+  const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   function combineData(geoData, populationData) {
+    console.log(populationData);
     const newCombinedData = geoData.features.map((feature) => {
       const name = feature.properties.name;
       const populationItem = populationData.find(
@@ -101,7 +103,7 @@ function App() {
       {isLoading ? (
         <div>Loading...</div>
       ) : (
-        <Map location={viewState} data={data} year={year} />
+        <Map location={viewState} data={data} />
       )}
     </div>
   );

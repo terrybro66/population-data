@@ -5,6 +5,9 @@
     },
     {
       "path": "../map-capture"
+    },
+    {
+      "path": "../scrape-paris"
     }
   ]
 }

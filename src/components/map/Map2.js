@@ -8,11 +8,10 @@ const MyMap = ({ data, location }) => {
   const onHover = ({ x, y, object }) => {
     console.log(object.properties.name);
   };
-  console.log(data);
   const layers = [
     new GeoJsonLayer({
       id: "geojson-layer",
-      data: data.location,
+      data,
       getFillColor: [255, 0, 0],
       extruded: true,
       pickable: true,
